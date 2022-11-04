@@ -7,20 +7,13 @@ import {
   useReducer,
   useRef,
 } from 'react';
-
-export type ContextMiddleware<R extends Reducer<any, any>> = (
-  state: ReducerState<R>
-) => (
-  getState: () => ReducerState<R>
-) => (
-  next: (action: ReducerAction<R>) => any
-) => (action: ReducerAction<R>) => any;
+import { ContextMiddleware } from './contextMiddleware';
 
 export const useEnhancedReducer = <R extends Reducer<any, any>>(
   reducer: R,
   initState: ReducerState<R>,
+  initializer?: Parameters<typeof useReducer>[2],
   middlewares: Array<ContextMiddleware<R>> = [],
-  initializer?: Parameters<typeof useReducer>[2]
 ) => {
   const lastState = useRef(initState);
   const getState = useCallback(() => lastState.current, []);

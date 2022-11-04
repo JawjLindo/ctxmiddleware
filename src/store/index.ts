@@ -1,17 +1,13 @@
 import React from 'react';
-import { ContextMiddleware, useEnhancedReducer } from './enhancedReducer';
+import { ContextMiddleware } from './toolkit';
+import { createAction } from './toolkit';
+import { createReducer } from './toolkit';
+import { createContext } from './toolkit';
 // Actions
 
-const INCREMENT = 'INCREMENT';
+const increment = createAction<number>('INCREMENT');
 
-type IncrementAction = {
-  type: typeof INCREMENT;
-};
-type Actions = IncrementAction;
-
-const increment = (): IncrementAction => {
-  return { type: INCREMENT };
-};
+type Actions = ReturnType<typeof increment>;
 
 const actions = { increment };
 
@@ -19,34 +15,19 @@ const actions = { increment };
 
 type CounterState = { count: number };
 
-const counterReducer = (state: CounterState, action: Actions): CounterState => {
-  switch (action.type) {
-    case INCREMENT:
-      const newCount = state.count + 1;
-      return { ...state, count: newCount };
-    default:
-      return state;
-  }
-};
+const counterReducer = createReducer<CounterState>((builder) => {
+  builder.addCase(actions.increment, (state, action) => {
+    state.count += action.payload;
+    return state;
+  })
+})
 
 // Context and Provider
 
-type TContext = {
-  counter: CounterState;
-  dispatch: React.Dispatch<Actions>;
-  actions: typeof actions;
-};
-
 const initialState: CounterState = { count: 0 };
 
-const CounterContext = React.createContext<TContext>({
-  counter: initialState,
-  dispatch: () => {},
-  actions,
-});
-
-const logMiddleware =
-  (id: number): ContextMiddleware<typeof counterReducer> =>
+const logMiddleware: (id: number) => ContextMiddleware<typeof counterReducer> =
+  (id: number) =>
   (state) =>
   (getState) =>
   (next) =>
@@ -56,21 +37,7 @@ const logMiddleware =
     console.log(id, 'after action', action, getState());
   };
 
-const CounterProvider: React.FC<{ children?: React.ReactNode }> = ({
-  children,
-}) => {
-  const [counter, dispatch] = useEnhancedReducer(counterReducer, initialState, [
-    logMiddleware(1),
-    logMiddleware(2),
-  ]);
+const { Provider: CounterProvider, hooks: [useCounterSelector, useCounterDispatch, useCounterActions] } =
+  createContext({displayName: 'Cuunter', initialState, actions}, counterReducer, [logMiddleware(1)]);
 
-  return React.createElement(
-    CounterContext.Provider,
-    { value: { counter, dispatch, actions } },
-    children
-  );
-};
-
-const useCounterContext = () => React.useContext(CounterContext);
-
-export { CounterProvider, useCounterContext };
+export { CounterProvider, useCounterSelector, useCounterDispatch, useCounterActions };

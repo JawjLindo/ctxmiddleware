@@ -1,14 +1,15 @@
 import React from 'react';
-import { useCounterContext } from './store';
 import { Button, Container } from 'react-bootstrap';
+import { useCounterActions, useCounterDispatch, useCounterSelector } from './store';
 
 function App() {
-  const { counter, dispatch, actions } = useCounterContext();
-  const { count } = counter;
+  const dispatch = useCounterDispatch();
+  const {count} = useCounterSelector();
+  const actions = useCounterActions();
 
   return (
     <Container>
-      <Button onClick={() => dispatch(actions.increment())}>Increment</Button>
+      <Button onClick={() => dispatch(actions.increment(5))}>Increment</Button>
       <div>{count}</div>
     </Container>
   );
