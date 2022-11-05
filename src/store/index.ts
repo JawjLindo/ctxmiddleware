@@ -1,5 +1,5 @@
 import React from 'react';
-import { createAction } from './toolkit';
+import { ContextMiddleware, createAction } from './toolkit';
 import { createReducer } from './toolkit';
 import { createContext } from './toolkit';
 
@@ -13,11 +13,7 @@ type CounterState = {
 
 const incrementAction = createAction<number>('counter/increment');
 const increment = (
-  dispatch: React.Dispatch<
-    | ReturnType<typeof asyncrementAction.pending>
-    | ReturnType<typeof asyncrementAction.fulfilled>
-    | ReturnType<typeof asyncrementAction.rejected>
-  >,
+  dispatch: React.Dispatch<ReturnType<typeof incrementAction>>,
   incrementValue: number
 ) => dispatch(incrementAction(incrementValue));
 
@@ -86,20 +82,20 @@ const counterReducer = createReducer<CounterState>((builder) => {
 
 const initialState: CounterState = { count: 0, status: 'idle' };
 
-// const logMiddleware: (id: number) => ContextMiddleware<typeof counterReducer> =
-//   (id: number) => (dispatch, getState, next) => (action) => {
-//     console.log(id, 'before action', action, getState());
-//     next(action);
-//     console.log(id, 'after action', action, getState());
-//   };
+const logMiddleware: (id: number) => ContextMiddleware<typeof counterReducer> =
+  (id: number) => (dispatch, getState, next) => (action) => {
+    console.log(id, 'before action', action, getState());
+    next(action);
+    console.log(id, 'after action', action, getState());
+  };
 
 const {
   Provider: CounterProvider,
   hooks: [useCounterSelector, useCounterDispatch, useCounterActions],
 } = createContext(
   { displayName: 'Cuunter', initialState, actions },
-  counterReducer
-  // [logMiddleware(1)]
+  counterReducer,
+  [logMiddleware(1)]
 );
 
 export {
