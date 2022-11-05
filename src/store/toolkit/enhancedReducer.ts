@@ -13,7 +13,7 @@ export const useEnhancedReducer = <R extends Reducer<any, any>>(
   reducer: R,
   initState: ReducerState<R>,
   initializer?: Parameters<typeof useReducer>[2],
-  middlewares: Array<ContextMiddleware<R>> = [],
+  middlewares: Array<ContextMiddleware<R>> = []
 ) => {
   const lastState = useRef(initState);
   const getState = useCallback(() => lastState.current, []);
@@ -27,7 +27,7 @@ export const useEnhancedReducer = <R extends Reducer<any, any>>(
   const enhancedDispatch = useMemo(
     () =>
       middlewaresRef.current.reduceRight(
-        (acc, mdw) => (action) => mdw(state)(getState)(acc)(action),
+        (acc, mdw) => (action) => mdw(state, getState, acc)(action),
         dispatch
       ),
     [getState, state]
