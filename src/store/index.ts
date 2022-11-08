@@ -1,7 +1,10 @@
-import React from 'react';
-import { ContextMiddleware, createAction } from './toolkit';
-import { createReducer } from './toolkit';
-import { createContext } from './toolkit';
+import {
+  ContextMiddleware,
+  createAsyncThunk,
+  createContext,
+  createReducer,
+  createSyncThunk,
+} from './toolkit';
 
 type CounterState = {
   count: number;
@@ -11,44 +14,23 @@ type CounterState = {
 
 // Actions
 
-const incrementAction = createAction<number>('counter/increment');
-const increment = (
-  dispatch: React.Dispatch<ReturnType<typeof incrementAction>>,
-  incrementValue: number
-) => dispatch(incrementAction(incrementValue));
+const [incrementAction, increment] =
+  createSyncThunk<number>('counter/increment');
 
-const asyncrementAction = {
-  pending: createAction('counter/asyncrement/pending'),
-  fulfilled: createAction<number>('counter/asyncrement/fulfilled'),
-  rejected: createAction<string>('counter/asyncrement/rejected'),
-};
-const asyncrement = async (
-  dispatch: React.Dispatch<
-    | ReturnType<typeof asyncrementAction.pending>
-    | ReturnType<typeof asyncrementAction.fulfilled>
-    | ReturnType<typeof asyncrementAction.rejected>
-  >,
-  {
-    incrementValue,
-    interval,
-    fail = false,
-  }: { incrementValue: number; interval: number; fail?: boolean }
-) => {
-  dispatch(asyncrementAction.pending());
-
-  new Promise<number>((resolve, reject) => {
-    setTimeout(() => {
-      if (fail) return reject('Bad things have happened');
-      resolve(incrementValue);
-    }, interval);
-  })
-    .then((incrementValue) =>
-      dispatch(asyncrementAction.fulfilled(incrementValue))
-    )
-    .catch((reason) => {
-      dispatch(asyncrementAction.rejected(`Threw error: ${reason}`));
+const [asyncrementAction, asyncrement] = createAsyncThunk<
+  number,
+  { incrementValue: number; interval: number; fail?: boolean }
+>(
+  'counter/asyncrement',
+  async ({ incrementValue, interval, fail = false }): Promise<number> => {
+    return new Promise<number>((resolve, reject) => {
+      setTimeout(() => {
+        if (fail) return reject('Bad things have happened');
+        resolve(incrementValue);
+      }, interval);
     });
-};
+  }
+);
 
 const actions = { increment, asyncrement };
 

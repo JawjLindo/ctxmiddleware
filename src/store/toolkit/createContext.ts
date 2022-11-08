@@ -3,8 +3,8 @@ import React, {
   Reducer,
   useContext,
 } from 'react';
+import { Action } from 'react-ctx-toolkit';
 import { ContextMiddleware } from '.';
-import { Action } from './createAction';
 import { useEnhancedReducer } from './enhancedReducer';
 
 export type CreateContextOptions<S, A> = {
